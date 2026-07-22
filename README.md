@@ -219,6 +219,3 @@ mvn pmd:check
 mvn compile -Dpmd.skip=true
 ```
 
-## License
-
-MIT
