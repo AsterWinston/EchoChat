@@ -1,6 +1,8 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import { uploadFile } from '@/utils/upload'
+import { getFriendList } from '@/api/friend'
+import type { FriendInfo } from '@/types/friend'
 
 interface MediaItem {
   name: string
@@ -12,7 +14,7 @@ interface MediaItem {
 interface PublishModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (content: string, visibility: string, showRange: string | null, media?: string) => Promise<void>
+  onSubmit: (content: string, visibility: string, showRange: string | null, media?: string, blockUids?: string[]) => Promise<void>
 }
 
 const SHOW_RANGE_OPTIONS = [
@@ -32,7 +34,16 @@ export default function PublishModal({ open, onClose, onSubmit }: PublishModalPr
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploading, setUploading] = useState(false)
   const [mediaList, setMediaList] = useState<MediaItem[]>([])
+  const [friends, setFriends] = useState<FriendInfo[]>([])
+  const [blockUids, setBlockUids] = useState<string[]>([])
+  const [friendSearch, setFriendSearch] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      getFriendList().then(setFriends).catch(() => setFriends([]))
+    }
+  }, [open])
 
   const handlePickFiles = () => fileInputRef.current?.click()
 
@@ -63,6 +74,8 @@ export default function PublishModal({ open, onClose, onSubmit }: PublishModalPr
     setText('')
     setVisibility('public')
     setShowRange('')
+    setBlockUids([])
+    setFriendSearch('')
     setMediaList((prev) => {
       for (const m of prev) URL.revokeObjectURL(m.preview)
       return []
@@ -113,7 +126,7 @@ export default function PublishModal({ open, onClose, onSubmit }: PublishModalPr
           })))
         }
       }
-      await onSubmit(trimmed, visibility, showRange || null, media)
+      await onSubmit(trimmed, visibility, showRange || null, media, visibility === 'restricted' ? blockUids : undefined)
       reset()
       onClose()
     } catch {
@@ -204,6 +217,40 @@ export default function PublishModal({ open, onClose, onSubmit }: PublishModalPr
             </button>
           </div>
         </div>
+
+        {visibility === 'restricted' && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs text-text-secondary">Block specific friends:</span>
+            <input
+              value={friendSearch}
+              onChange={(e) => setFriendSearch(e.target.value)}
+              placeholder="Search friends..."
+              className="w-full text-xs bg-gray-50 rounded-lg px-3 py-1.5 border-none outline-none text-text-primary"
+            />
+            <div className="max-h-28 overflow-y-auto flex flex-col gap-0.5">
+              {friends
+                .filter((f) => !friendSearch || f.nickname?.toLowerCase().includes(friendSearch.toLowerCase()) || f.uid.includes(friendSearch))
+                .map((f) => {
+                  const checked = blockUids.includes(f.uid)
+                  return (
+                    <label key={f.uid} className="flex items-center gap-2 px-1 py-0.5 rounded cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          setBlockUids((prev) => checked ? prev.filter((id) => id !== f.uid) : [...prev, f.uid])
+                        }}
+                        className="accent-primary-500"
+                      />
+                      <span className="text-xs text-text-primary truncate">{f.nickname || f.uid}</span>
+                      {f.memo && <span className="text-[10px] text-text-secondary truncate">({f.memo})</span>}
+                    </label>
+                  )
+                })}
+              {friends.length === 0 && <span className="text-xs text-text-secondary px-1">No friends</span>}
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <span className="text-xs text-text-secondary">Show range:</span>

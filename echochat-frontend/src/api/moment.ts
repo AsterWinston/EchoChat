@@ -14,6 +14,7 @@ export async function publishMoment(body: {
   media?: string
   visibility?: string
   showRange?: string
+  blockUids?: string[]
 }): Promise<MomentInfo> {
   const res = await client.post<never, { data: Result<MomentInfo> }>('/moment', body)
   return res.data.data

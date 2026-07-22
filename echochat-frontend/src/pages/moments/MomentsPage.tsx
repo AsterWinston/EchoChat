@@ -84,11 +84,12 @@ export default function MomentsPage() {
     }
   }, [loadMore])
 
-  const handlePublish = useCallback(async (content: string, visibility: string, showRange: string | null, media?: string) => {
-    const body: { content: string; visibility?: string; showRange?: string; media?: string } = { content }
+  const handlePublish = useCallback(async (content: string, visibility: string, showRange: string | null, media?: string, blockUids?: string[]) => {
+    const body: { content: string; visibility?: string; showRange?: string; media?: string; blockUids?: string[] } = { content }
     if (media) body.media = media
     if (visibility !== 'public') body.visibility = visibility
     if (showRange) body.showRange = showRange
+    if (blockUids && blockUids.length > 0) body.blockUids = blockUids
     await momentApi.publishMoment(body)
     loadFeed()
   }, [loadFeed])
