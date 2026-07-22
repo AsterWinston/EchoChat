@@ -82,7 +82,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
      * 通过一次性邀请码加入群组。验证邀请码是否存在、是否已使用、是否过期以及是否重复加入。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void joinByInvite(Long uid, String code) {
         GroupInvite invite = groupInviteMapper.findByCode(code);
         if (invite == null) {
@@ -123,7 +123,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
      * 邀请多个用户加入群组。要求邀请者必须是所有者或管理员、是成员且未被禁言。对每个被邀请的UID通过用户服务进行验证；已有成员会被静默跳过。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void inviteMembers(Long inviterUid, Long gid, List<Long> uids) {
         GroupMember inviter = checkMember(gid, inviterUid);
         checkNotMuted(inviter);
@@ -153,7 +153,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
      * 将成员踢出群组。仅所有者/管理员可踢人；所有者不可被踢；管理员不能踢出其他管理员。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void kickMember(Long operatorUid, Long gid, Long targetUid) {
         GroupMember operator = checkMember(gid, operatorUid);
         checkCanManage(operator);
@@ -176,7 +176,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     /** 所有者不能直接退出；请先转让所有权。 */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void leaveGroup(Long uid, Long gid) {
         GroupMember member = checkMember(gid, uid);
 
@@ -194,7 +194,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
      * 设置成员角色（admin/member）。仅所有者可执行此操作。不能设置为owner（请使用transferOwner）。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void setRole(Long operatorUid, Long gid, Long targetUid, String role) {
         GroupMember operator = checkMember(gid, operatorUid);
         if (GroupRole.from(operator.getRole()) != GroupRole.OWNER) {
@@ -217,7 +217,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
      * 对成员禁言指定分钟数。仅所有者/管理员可禁言。所有者和同级管理员不可被禁言。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void muteMember(Long operatorUid, Long gid, Long targetUid, int minutes) {
         GroupMember operator = checkMember(gid, operatorUid);
         checkCanManage(operator);
@@ -239,7 +239,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     /** 解除成员禁言，将muteUntil设置为null。 */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void unmuteMember(Long operatorUid, Long gid, Long targetUid) {
         GroupMember operator = checkMember(gid, operatorUid);
         checkCanManage(operator);

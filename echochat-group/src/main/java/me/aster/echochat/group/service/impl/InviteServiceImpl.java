@@ -28,6 +28,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InviteServiceImpl implements InviteService {
 
+    private static final int MAX_EXPIRE_HOURS = 72;
+
     private final GroupInviteMapper groupInviteMapper;
     private final GroupInfoMapper groupInfoMapper;
     private final GroupMemberMapper groupMemberMapper;
@@ -42,7 +44,7 @@ public class InviteServiceImpl implements InviteService {
      * @return 包含code、expireAt和gid的map
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createInvite(Long uid, Long gid, int expireHours) {
         GroupInfo group = groupInfoMapper.selectById(gid);
         if (group == null) {
@@ -57,7 +59,7 @@ public class InviteServiceImpl implements InviteService {
             throw new BusinessException(ResultCode.FORBIDDEN.getCode(), "Only owner and admins can create invite links");
         }
 
-        if (expireHours <= 0 || expireHours > 72) {
+        if (expireHours <= 0 || expireHours > MAX_EXPIRE_HOURS) {
             expireHours = 24;
         }
 

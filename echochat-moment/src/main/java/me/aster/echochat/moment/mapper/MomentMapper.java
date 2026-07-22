@@ -16,6 +16,8 @@ import java.util.List;
 public interface MomentMapper extends BaseMapper<Moment> {
 
     /**
+     * 查询指定用户的分页活跃动态。
+     *
      * @param uid        发布者UID
      * @param beforeTime 基于时间的分页游标
      * @param limit      最大结果数
@@ -28,6 +30,8 @@ public interface MomentMapper extends BaseMapper<Moment> {
                                     @Param("limit") int limit);
 
     /**
+     * 根据ID查询未被删除的动态。
+     *
      * @param momentId 动态ID
      * @return 活跃的动态，未找到或已删除则返回null
      */

@@ -19,6 +19,8 @@ import java.util.List;
 public interface ConversationMapper extends BaseMapper<Conversation> {
 
     /**
+     * 根据用户ID、会话类型和对方ID查找会话。
+     *
      * @param uid         所属用户ID
      * @param sessionType 会话类型
      * @param targetId    目标对端/群组ID
@@ -30,6 +32,8 @@ public interface ConversationMapper extends BaseMapper<Conversation> {
                                     @Param("targetId") String targetId);
 
     /**
+     * 查询指定用户的所有会话，按置顶和更新时间排序。
+     *
      * @param uid 所属用户ID
      * @return 按置顶状态和最后更新时间排序的会话列表
      */
@@ -50,6 +54,8 @@ public interface ConversationMapper extends BaseMapper<Conversation> {
                           @Param("targetId") String targetId, @Param("unreadCount") int unreadCount);
 
     /**
+     * 查询已有指定群组会话记录的UID子集。
+     *
      * @param targetId 群组ID（字符串形式）
      * @param uids     候选成员UID
      * @return 已有该群组会话记录的UID子集

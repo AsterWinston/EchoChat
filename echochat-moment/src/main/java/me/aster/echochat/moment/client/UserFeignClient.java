@@ -16,12 +16,20 @@ import java.util.Map;
 public interface UserFeignClient {
 
     /**
+     * 获取用户的所有好友UID列表。
+     *
      * @param uid 用户ID
      * @return 好友UID列表
      */
     @GetMapping("/{uid}/friend-uids")
     List<Long> getFriendUids(@PathVariable("uid") Long uid);
 
+    /**
+     * 获取用户的黑名单UID列表。
+     *
+     * @param uid 用户ID
+     * @return 黑名单UID列表
+     */
     @GetMapping("/{uid}/blacklist-uids")
     List<Long> getBlacklistUids(@PathVariable("uid") Long uid);
 

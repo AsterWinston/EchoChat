@@ -33,6 +33,7 @@ public class UnreadSyncTask {
     private static final String LOCK_KEY = "lock:unread:sync";
     /** 本实例锁获取的唯一所有者令牌。 */
     private static final String LOCK_TOKEN = UUID.randomUUID().toString();
+    private static final long LOCK_LEASE_MINUTES = 4;
 
     /**
      * 每5分钟执行一次，扫描未读计数器并将快照写入MySQL。
@@ -40,7 +41,7 @@ public class UnreadSyncTask {
     @Scheduled(fixedDelay = 300_000, initialDelay = 60_000)
     public void syncUnreadToDb() {
         try {
-            if (!RedisLockUtil.tryLock(redisTemplate, LOCK_KEY, LOCK_TOKEN, Duration.ofMinutes(4))) {
+            if (!RedisLockUtil.tryLock(redisTemplate, LOCK_KEY, LOCK_TOKEN, Duration.ofMinutes(LOCK_LEASE_MINUTES))) {
                 return;
             }
             try {

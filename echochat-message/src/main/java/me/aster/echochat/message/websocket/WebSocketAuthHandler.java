@@ -29,6 +29,10 @@ public class WebSocketAuthHandler extends ChannelInboundHandlerAdapter {
     private final String jwtSecret;
     private final String wsUrl;
 
+    private static final String AMPERSAND = "&";
+    private static final String EQUALS_SIGN = "=";
+    private static final String TOKEN_PARAM = "token";
+
     /**
      * 使用所需依赖和WebSocket URL配置构造认证处理器。
      *
@@ -112,9 +116,9 @@ public class WebSocketAuthHandler extends ChannelInboundHandlerAdapter {
             return null;
         }
         String query = uri.substring(queryIdx + 1);
-        for (String pair : query.split("&")) {
-            int eq = pair.indexOf('=');
-            if (eq > 0 && "token".equals(pair.substring(0, eq))) {
+        for (String pair : query.split(AMPERSAND)) {
+            int eq = pair.indexOf(EQUALS_SIGN);
+            if (eq > 0 && TOKEN_PARAM.equals(pair.substring(0, eq))) {
                 String value = pair.substring(eq + 1);
                 return value.isEmpty() ? null : value;
             }

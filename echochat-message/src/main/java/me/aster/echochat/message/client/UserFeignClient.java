@@ -20,6 +20,8 @@ import java.util.Map;
 public interface UserFeignClient {
 
     /**
+     * 根据用户ID获取用户信息。
+     *
      * @param uid 要查询的用户ID
      * @return 给定ID对应的{@link me.aster.echochat.common.entity.User}
      */
@@ -36,6 +38,8 @@ public interface UserFeignClient {
     List<User> getUsersByUids(@RequestBody List<Long> uids);
 
     /**
+     * 检查两个用户是否为好友关系。
+     *
      * @param uid1 第一个用户ID
      * @param uid2 第二个用户ID
      * @return 包含好友检查结果的map，键为"friends"
@@ -43,12 +47,31 @@ public interface UserFeignClient {
     @GetMapping("/friend/check")
     Map<String, Boolean> checkFriendship(@RequestParam("uid1") Long uid1, @RequestParam("uid2") Long uid2);
 
+    /**
+     * 检查用户是否被拉黑。
+     *
+     * @param uid        当前用户ID
+     * @param blockedUid 被检查的用户ID
+     * @return 包含黑名单检查结果的map，键为"blocked"
+     */
     @GetMapping("/blacklist/check")
     Map<String, Boolean> checkBlacklist(@RequestParam("uid") Long uid, @RequestParam("blockedUid") Long blockedUid);
 
+    /**
+     * 更新用户的最后在线时间。
+     *
+     * @param uid 用户ID
+     */
     @PutMapping("/{uid}/last-seen")
     void updateLastSeen(@PathVariable("uid") Long uid);
 
+    /**
+     * 获取好友备注。
+     *
+     * @param uid       所属用户ID
+     * @param friendUid 好友的用户ID
+     * @return 包含备注信息的map
+     */
     @GetMapping("/{uid}/friend-memo/{friendUid}")
     Map<String, String> getFriendMemo(@PathVariable("uid") Long uid, @PathVariable("friendUid") Long friendUid);
 

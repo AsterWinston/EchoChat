@@ -15,9 +15,22 @@ import java.util.List;
 @Mapper
 public interface GroupJoinRequestMapper extends BaseMapper<GroupJoinRequest> {
 
+    /**
+     * 查询指定群组中所有待处理的加入申请。
+     *
+     * @param gid 群组ID
+     * @return 待处理的申请列表
+     */
     @Select("SELECT * FROM group_join_request WHERE gid = #{gid} AND status = 'pending' ORDER BY created_at ASC")
     List<GroupJoinRequest> findPendingByGid(@Param("gid") Long gid);
 
+    /**
+     * 根据群组ID和用户ID查询最新的加入申请。
+     *
+     * @param gid 群组ID
+     * @param uid 用户ID
+     * @return 最新的申请记录，不存在则返回null
+     */
     @Select("SELECT * FROM group_join_request WHERE gid = #{gid} AND uid = #{uid} ORDER BY created_at DESC LIMIT 1")
     GroupJoinRequest findByGidAndUid(@Param("gid") Long gid, @Param("uid") Long uid);
 }

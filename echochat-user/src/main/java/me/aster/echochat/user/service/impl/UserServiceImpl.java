@@ -37,6 +37,15 @@ public class UserServiceImpl implements UserService {
     /** 用于跟踪用户按设备在线状态的 Redis 模板。 */
     private final StringRedisTemplate redisTemplate;
 
+    private static final String FIELD_NICKNAME = "nickname";
+    private static final String FIELD_AVATAR = "avatar";
+    private static final String FIELD_SIGNATURE = "signature";
+    private static final String FIELD_GENDER = "gender";
+    private static final String FIELD_AGE = "age";
+    private static final String FIELD_EMAIL = "email";
+    private static final String PLACEHOLDER_HASH = "PLACEHOLDER";
+    private static final String DEFAULT_PASSWORD = "123456";
+
     /**
      * 检查邮箱唯一性后创建新用户。
      * 生成雪花 ID 作为 UID 并使用 BCrypt 哈希密码。
@@ -48,7 +57,7 @@ public class UserServiceImpl implements UserService {
      * @throws BusinessException 如果邮箱已被注册
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public User createUser(String email, String password, String nickname) {
         if (email != null && userMapper.selectCount(
                 new LambdaQueryWrapper<User>().eq(User::getEmail, email)) > 0) {
@@ -95,7 +104,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByUid(Long uid) {
         User user = userMapper.selectById(uid);
-        if (user == null || (user.getIsDeleted() != null && user.getIsDeleted() == 1)) {
+        if (isUserDeleted(user)) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
         user.setPassword(null);
@@ -114,7 +123,7 @@ public class UserServiceImpl implements UserService {
             return List.of();
         }
         return userMapper.selectBatchIds(uids).stream()
-                .filter(user -> user != null && (user.getIsDeleted() == null || user.getIsDeleted() != 1))
+                .filter(user -> !isUserDeleted(user))
                 .peek(user -> user.setPassword(null))
                 .toList();
     }
@@ -129,24 +138,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUserProfile(Long uid, Map<String, Object> updates) {
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<User>().eq(User::getUid, uid);
-        if (updates.containsKey("nickname")) {
-            wrapper.set(User::getNickname, updates.get("nickname"));
-        }
-        if (updates.containsKey("avatar")) {
-            wrapper.set(User::getAvatar, updates.get("avatar"));
-        }
-        if (updates.containsKey("signature")) {
-            wrapper.set(User::getSignature, updates.get("signature"));
-        }
-        if (updates.containsKey("gender")) {
-            wrapper.set(User::getGender, updates.get("gender"));
-        }
-        if (updates.containsKey("age")) {
-            wrapper.set(User::getAge, updates.get("age"));
-        }
-        if (updates.containsKey("email")) {
-            wrapper.set(User::getEmail, updates.get("email"));
-        }
+        applyUpdate(wrapper, User::getNickname, updates, FIELD_NICKNAME);
+        applyUpdate(wrapper, User::getAvatar, updates, FIELD_AVATAR);
+        applyUpdate(wrapper, User::getSignature, updates, FIELD_SIGNATURE);
+        applyUpdate(wrapper, User::getGender, updates, FIELD_GENDER);
+        applyUpdate(wrapper, User::getAge, updates, FIELD_AGE);
+        applyUpdate(wrapper, User::getEmail, updates, FIELD_EMAIL);
         userMapper.update(wrapper);
         return getUserByUid(uid);
     }
@@ -160,7 +157,7 @@ public class UserServiceImpl implements UserService {
      * @throws BusinessException 如果用户不存在或旧密码不正确
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void changePassword(Long uid, String oldPassword, String newPassword) {
         User user = userMapper.selectById(uid);
         if (user == null) {
@@ -341,8 +338,8 @@ public class UserServiceImpl implements UserService {
         if (hash == null) {
             return false;
         }
-        if (hash.contains("PLACEHOLDER")) {
-            if ("123456".equals(rawPassword)) {
+        if (hash.contains(PLACEHOLDER_HASH)) {
+            if (DEFAULT_PASSWORD.equals(rawPassword)) {
                 user.setPassword(passwordEncoder.encode(rawPassword));
                 userMapper.updateById(user);
                 return true;
@@ -350,5 +347,21 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         return passwordEncoder.matches(rawPassword, hash);
+    }
+
+    private static boolean isUserDeleted(User user) {
+        return user == null || (user.getIsDeleted() != null && user.getIsDeleted() == 1);
+    }
+
+    private void applyUpdate(LambdaUpdateWrapper<User> wrapper, java.util.function.BiConsumer<LambdaUpdateWrapper<User>, Object> setter, Map<String, Object> updates, String fieldName) {
+        if (updates.containsKey(fieldName)) {
+            setter.accept(wrapper, updates.get(fieldName));
+        }
+    }
+
+    private void applyUpdate(LambdaUpdateWrapper<User> wrapper, com.baomidou.mybatisplus.core.toolkit.support.SFunction<User, ?> column, Map<String, Object> updates, String fieldName) {
+        if (updates.containsKey(fieldName)) {
+            wrapper.set(column, updates.get(fieldName));
+        }
     }
 }

@@ -70,7 +70,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(GatewayConstants.BEARER_PREFIX)) {
             return writeResult(exchange, HttpStatus.UNAUTHORIZED,
                     Result.fail(401, "Not logged in or token expired"));
         }
@@ -91,7 +91,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         String tokenType = claims.get("type", String.class);
-        if (!"access".equals(tokenType)) {
+        if (!GatewayConstants.TOKEN_TYPE_ACCESS.equals(tokenType)) {
             return writeResult(exchange, HttpStatus.UNAUTHORIZED,
                     Result.fail(401, "Wrong token type"));
         }
@@ -101,11 +101,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
                 .timeout(BusinessConstants.REDIS_TIMEOUT_1S)
                 .onErrorResume(e -> {
                     log.error("Token blacklist check failed - rejecting: error={}", e.getMessage());
-                    return Mono.just("__BLACKLIST_ERROR__");
+                    return Mono.just(GatewayConstants.BLACKLIST_ERROR_TOKEN);
                 })
                 .defaultIfEmpty("")
                 .flatMap(blacklisted -> {
-                    if ("__BLACKLIST_ERROR__".equals(blacklisted)) {
+                    if (GatewayConstants.BLACKLIST_ERROR_TOKEN.equals(blacklisted)) {
                         return writeResult(exchange, HttpStatus.SERVICE_UNAVAILABLE,
                                 Result.fail(503, "Service temporarily unavailable"));
                     }

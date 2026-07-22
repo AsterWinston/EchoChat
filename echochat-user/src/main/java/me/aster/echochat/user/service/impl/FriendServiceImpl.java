@@ -55,14 +55,14 @@ public class FriendServiceImpl implements FriendService {
      * @throws BusinessException 如果验证失败
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void sendRequest(Long fromUid, Long toUid, String message) {
         if (fromUid.equals(toUid)) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "Cannot add yourself as friend");
         }
 
         User targetUser = userMapper.selectById(toUid);
-        if (targetUser == null || (targetUser.getIsDeleted() != null && targetUser.getIsDeleted() == 1)) {
+        if (isUserDeleted(targetUser)) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
@@ -107,7 +107,7 @@ public class FriendServiceImpl implements FriendService {
      * @throws BusinessException 如果请求不存在、无权限、已处理或已过期
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void acceptRequest(Long requestId, Long currentUid) {
         FriendRequest request = friendRequestMapper.selectById(requestId);
         if (request == null) {
@@ -158,7 +158,7 @@ public class FriendServiceImpl implements FriendService {
      * @throws BusinessException 如果请求不存在、无权限或已处理
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void rejectRequest(Long requestId, Long currentUid) {
         FriendRequest request = friendRequestMapper.selectById(requestId);
         if (request == null) {
@@ -221,7 +221,7 @@ public class FriendServiceImpl implements FriendService {
         List<User> users = userMapper.selectBatchIds(friendUids);
         Map<Long, User> userMap = new LinkedHashMap<>(16);
         for (User u : users) {
-            if (u != null && (u.getIsDeleted() == null || u.getIsDeleted() != 1)) {
+            if (!isUserDeleted(u)) {
                 userMap.put(u.getUid(), u);
             }
         }
@@ -257,7 +257,7 @@ public class FriendServiceImpl implements FriendService {
      * @throws BusinessException 如果好友关系不存在
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateGroup(Long uid, Long friendUid, String groupName, String memo) {
         LambdaQueryWrapper<Friend> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Friend::getUserUid, uid).eq(Friend::getFriendUid, friendUid);
@@ -319,7 +319,7 @@ public class FriendServiceImpl implements FriendService {
      * @param friendUid 要删除的好友用户 ID
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteFriend(Long uid, Long friendUid) {
         LambdaQueryWrapper<Friend> wrapper1 = new LambdaQueryWrapper<>();
         wrapper1.eq(Friend::getUserUid, uid).eq(Friend::getFriendUid, friendUid);
@@ -338,14 +338,14 @@ public class FriendServiceImpl implements FriendService {
      * @throws BusinessException 如果屏蔽自己、用户不存在或已在黑名单中
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void addToBlacklist(Long uid, Long blockedUid) {
         if (uid.equals(blockedUid)) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "Cannot block yourself");
         }
 
         User targetUser = userMapper.selectById(blockedUid);
-        if (targetUser == null || (targetUser.getIsDeleted() != null && targetUser.getIsDeleted() == 1)) {
+        if (isUserDeleted(targetUser)) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
@@ -368,7 +368,7 @@ public class FriendServiceImpl implements FriendService {
      * @param blockedUid 要解除屏蔽的用户 ID
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void removeFromBlacklist(Long uid, Long blockedUid) {
         LambdaQueryWrapper<Blacklist> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Blacklist::getUid, uid).eq(Blacklist::getBlockedUid, blockedUid);
@@ -476,5 +476,9 @@ public class FriendServiceImpl implements FriendService {
         if (!expired.isEmpty()) {
             log.info("Expired {} friend requests", expired.size());
         }
+    }
+
+    private static boolean isUserDeleted(User user) {
+        return user == null || (user.getIsDeleted() != null && user.getIsDeleted() == 1);
     }
 }

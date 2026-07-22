@@ -3,6 +3,7 @@ package me.aster.echochat.gateway.filter;
 import lombok.extern.slf4j.Slf4j;
 import me.aster.echochat.common.constant.BusinessConstants;
 import me.aster.echochat.common.constant.RedisKeyConstants;
+import me.aster.echochat.gateway.constant.GatewayConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -103,19 +104,19 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
                         return tooManyRequests(exchange);
                     }
 
-                    if (path.startsWith("/api/auth/login")) {
+                    if (path.startsWith(GatewayConstants.PATH_AUTH_LOGIN)) {
                         String loginKey = RedisKeyConstants.RATE_LIMIT_LOGIN_PREFIX + ip;
                         return checkLimit(loginKey, loginLimit, loginWindowSeconds)
                                 .flatMap(loginAllowed -> loginAllowed ? chain.filter(exchange) : tooManyRequests(exchange));
                     }
 
-                    if (path.startsWith("/api/auth/register")) {
+                    if (path.startsWith(GatewayConstants.PATH_AUTH_REGISTER)) {
                         String registerKey = RedisKeyConstants.RATE_LIMIT_REGISTER_PREFIX + ip;
                         return checkLimit(registerKey, 3, 3600)
                                 .flatMap(regAllowed -> regAllowed ? chain.filter(exchange) : tooManyRequests(exchange));
                     }
 
-                    if (path.startsWith("/api/message/send") || path.startsWith("/api/message/send/group")) {
+                    if (path.startsWith(GatewayConstants.PATH_MESSAGE_SEND) || path.startsWith(GatewayConstants.PATH_MESSAGE_SEND_GROUP)) {
                         String uidHeader = exchange.getRequest().getHeaders().getFirst(BusinessConstants.USER_ID_HEADER);
                         if (uidHeader != null) {
                             String msgKey = RedisKeyConstants.RATE_LIMIT_MSG_PREFIX + uidHeader;
@@ -124,7 +125,7 @@ public class RateLimitFilter implements GlobalFilter, Ordered {
                         }
                     }
 
-                    if (path.startsWith("/api/message/forward")) {
+                    if (path.startsWith(GatewayConstants.PATH_MESSAGE_FORWARD)) {
                         String uidHeader = exchange.getRequest().getHeaders().getFirst(BusinessConstants.USER_ID_HEADER);
                         if (uidHeader != null) {
                             String fwdKey = RedisKeyConstants.RATE_LIMIT_FWD_PREFIX + uidHeader;

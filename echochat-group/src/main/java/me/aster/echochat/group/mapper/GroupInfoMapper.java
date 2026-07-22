@@ -15,6 +15,8 @@ import java.util.List;
 public interface GroupInfoMapper extends BaseMapper<GroupInfo> {
 
     /**
+     * 根据所有者ID查询其拥有的群组。
+     *
      * @param uid 所有者的用户ID
      * @return 用户拥有的群组列表
      */
@@ -22,6 +24,8 @@ public interface GroupInfoMapper extends BaseMapper<GroupInfo> {
     List<GroupInfo> findByOwnerUid(@Param("uid") Long uid);
 
     /**
+     * 根据成员ID查询该成员已加入的群组。
+     *
      * @param uid 成员的用户ID
      * @return 用户已加入的群组列表
      */
@@ -30,6 +34,12 @@ public interface GroupInfoMapper extends BaseMapper<GroupInfo> {
             "WHERE gm.uid = #{uid}")
     List<GroupInfo> findByMemberUid(@Param("uid") Long uid);
 
+    /**
+     * 根据关键词模糊搜索群组名称。
+     *
+     * @param keyword 搜索关键词
+     * @return 名称匹配的群组列表
+     */
     @Select("SELECT * FROM group_info WHERE name LIKE CONCAT('%', #{keyword}, '%')")
     List<GroupInfo> searchByName(@Param("keyword") String keyword);
 }

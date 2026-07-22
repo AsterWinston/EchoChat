@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtUtil.validateToken(refreshToken)) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
-        if (!"refresh".equals(jwtUtil.getTokenType(refreshToken))) {
+        if (!AuthConstants.TOKEN_TYPE_REFRESH.equals(jwtUtil.getTokenType(refreshToken))) {
             throw new BusinessException(ResultCode.TOKEN_INVALID, "Wrong token type");
         }
         if (Boolean.TRUE.equals(redisTemplate.hasKey(tokenBlacklistKey(refreshToken)))) {

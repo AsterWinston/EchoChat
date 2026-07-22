@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MomentServiceImpl implements MomentService {
 
+    private static final String VISIBILITY_RESTRICTED = "restricted";
+
     private final MomentMapper momentMapper;
     private final MomentLikeMapper momentLikeMapper;
     private final MomentCommentMapper momentCommentMapper;
@@ -50,10 +52,12 @@ public class MomentServiceImpl implements MomentService {
      * @return 创建的动态
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Moment publish(Long uid, String content, String media, String visibility,
                            List<Long> blockUids, String showRange) {
-        if ((content == null || content.isBlank()) && (media == null || media.isBlank())) {
+        boolean hasContent = content != null && !content.isBlank();
+        boolean hasMedia = media != null && !media.isBlank();
+        if (!hasContent && !hasMedia) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "Content and media cannot both be empty");
         }
 
@@ -69,7 +73,7 @@ public class MomentServiceImpl implements MomentService {
         moment.setIsDeleted(0);
         momentMapper.insert(moment);
 
-        if ("restricted".equals(moment.getVisibility()) && blockUids != null && !blockUids.isEmpty()) {
+        if (VISIBILITY_RESTRICTED.equals(moment.getVisibility()) && blockUids != null && !blockUids.isEmpty()) {
             for (Long blockUid : blockUids) {
                 MomentPrivacy privacy = new MomentPrivacy();
                 privacy.setMomentId(moment.getMomentId());
@@ -107,7 +111,7 @@ public class MomentServiceImpl implements MomentService {
      * @param momentId 要删除的动态ID
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteMoment(Long uid, Long momentId) {
         Moment moment = momentMapper.findActiveById(momentId);
         if (moment == null) {
@@ -182,7 +186,7 @@ public class MomentServiceImpl implements MomentService {
             if (blockedUids.contains(m.getUid())) {
                 continue;
             }
-            if ("restricted".equals(m.getVisibility())) {
+            if (VISIBILITY_RESTRICTED.equals(m.getVisibility())) {
                 Set<Long> blockUids = privacyMap.get(m.getMomentId());
                 if (blockUids != null && blockUids.contains(uid)) {
                     continue;
@@ -250,7 +254,7 @@ public class MomentServiceImpl implements MomentService {
         boolean isOwner = viewerUid.equals(targetUid);
         List<Moment> filtered = moments.stream()
                 .filter(m -> isOwner
-                        || !"restricted".equals(m.getVisibility())
+                        || !VISIBILITY_RESTRICTED.equals(m.getVisibility())
                         || !momentPrivacyMapper.findBlockUidsByMomentId(m.getMomentId()).contains(viewerUid))
                 .toList();
         if (filtered.isEmpty()) {
@@ -282,7 +286,7 @@ public class MomentServiceImpl implements MomentService {
      * @param momentId 要点赞的动态ID
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void likeMoment(Long uid, Long momentId) {
         Moment moment = checkMomentAccess(momentId, uid);
         requireInteractionPermission(moment, uid);
@@ -312,7 +316,7 @@ public class MomentServiceImpl implements MomentService {
      * @param momentId 要取消点赞的动态ID
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void unlikeMoment(Long uid, Long momentId) {
         checkMomentAccess(momentId, uid);
         MomentLike existing = momentLikeMapper.findByMomentAndUid(momentId, uid);
@@ -358,7 +362,7 @@ public class MomentServiceImpl implements MomentService {
      * @return 创建的评论
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public MomentComment comment(Long uid, Long momentId, Long replyToUid, String content) {
         Moment moment = checkMomentAccess(momentId, uid);
         requireInteractionPermission(moment, uid);
@@ -406,7 +410,7 @@ public class MomentServiceImpl implements MomentService {
         if (moment == null) {
             throw new BusinessException(ResultCode.NOT_FOUND.getCode(), "Moment not found or deleted");
         }
-        if ("restricted".equals(moment.getVisibility())
+        if (VISIBILITY_RESTRICTED.equals(moment.getVisibility())
                 && !moment.getUid().equals(uid)
                 && momentPrivacyMapper.findBlockUidsByMomentId(momentId).contains(uid)) {
             throw new BusinessException(ResultCode.NOT_FOUND.getCode(), "Moment not found or deleted");

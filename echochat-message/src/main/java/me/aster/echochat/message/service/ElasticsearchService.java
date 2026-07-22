@@ -27,6 +27,9 @@ public class ElasticsearchService {
 
     private final String esUrl;
     private final String esAuthHeader;
+    private static final int HTTP_SUCCESS_MIN = 200;
+    private static final int HTTP_SUCCESS_MAX = 300;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ElasticsearchService(@Value("${echochat.elasticsearch.uris}") String esUrl,
@@ -75,7 +78,7 @@ public class ElasticsearchService {
 
                 int code = conn.getResponseCode();
 
-                if (code >= 200 && code < 300) {
+                if (code >= HTTP_SUCCESS_MIN && code < HTTP_SUCCESS_MAX) {
                     log.info("Message indexed to ES: msgId={}", message.getMsgId());
                 } else {
                     log.warn("ES index returned status {} for msgId={}", code, message.getMsgId());

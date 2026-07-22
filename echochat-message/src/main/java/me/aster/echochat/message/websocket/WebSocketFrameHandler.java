@@ -19,6 +19,14 @@ import me.aster.echochat.message.service.impl.MessageReadService;
 @Slf4j
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
+    private static final String TYPE_PING = "ping";
+    private static final String TYPE_READ = "read";
+    private static final String TYPE_GROUP_READ = "group_read";
+    private static final String TYPE_TYPING = "typing";
+    private static final String TYPE_SYNC = "sync";
+    private static final String TYPE_ACK = "ack";
+    private static final String FIELD_SESSIONS = "sessions";
+
     private static final com.fasterxml.jackson.databind.ObjectMapper MAPPER =
             new com.fasterxml.jackson.databind.ObjectMapper();
 
@@ -73,18 +81,18 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             @SuppressWarnings("unchecked")
             java.util.Map<String, Object> msg = MAPPER.readValue(text, java.util.Map.class);
             String type = (String) msg.get("type");
-            if ("ping".equals(type)) {
+            if (TYPE_PING.equals(type)) {
                 pushService.handleHeartbeat(session.getUid(), session.getDeviceId());
                 ctx.writeAndFlush(new TextWebSocketFrame("{\"type\":\"pong\"}"));
-            } else if ("read".equals(type)) {
+            } else if (TYPE_READ.equals(type)) {
                 handleRead(msg);
-            } else if ("group_read".equals(type)) {
+            } else if (TYPE_GROUP_READ.equals(type)) {
                 handleGroupRead(msg);
-            } else if ("typing".equals(type)) {
+            } else if (TYPE_TYPING.equals(type)) {
                 handleTyping(msg);
-            } else if ("sync".equals(type)) {
+            } else if (TYPE_SYNC.equals(type)) {
                 handleSync(msg, ctx);
-            } else if ("ack".equals(type)) {
+            } else if (TYPE_ACK.equals(type)) {
                 handleAck(msg);
             }
         } catch (Exception e) {
@@ -117,7 +125,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @SuppressWarnings("unchecked")
     private void handleSync(java.util.Map<String, Object> msg, ChannelHandlerContext ctx) {
         java.util.Map<String, Object> data = (java.util.Map<String, Object>) msg.get("data");
-        if (data != null && data.get("sessions") instanceof java.util.List) {
+        if (data != null && data.get(FIELD_SESSIONS) instanceof java.util.List) {
             java.util.List<java.util.Map<String, Object>> sessions =
                     (java.util.List<java.util.Map<String, Object>>) data.get("sessions");
             pushService.syncIncrementalMessages(session.getUid(), sessions, ctx.channel());

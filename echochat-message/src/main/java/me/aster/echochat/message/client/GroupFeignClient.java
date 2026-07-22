@@ -17,6 +17,8 @@ import java.util.Map;
 public interface GroupFeignClient {
 
     /**
+     * 获取群组基本信息。
+     *
      * @param gid 群组ID
      * @return 包含群名和头像的群组信息
      */
@@ -33,6 +35,8 @@ public interface GroupFeignClient {
     Map<String, Map<String, Object>> getGroupInfoBatch(@RequestBody List<Long> gids);
 
     /**
+     * 检查用户是否为群组成员并获取成员详情。
+     *
      * @param gid 群组ID
      * @param uid 要检查的用户ID
      * @return 包含成员详情（含静音状态）的map
@@ -41,6 +45,8 @@ public interface GroupFeignClient {
     Map<String, Object> checkMembership(@PathVariable Long gid, @PathVariable Long uid);
 
     /**
+     * 获取群组所有成员的用户ID列表。
+     *
      * @param gid 群组ID
      * @return 群组中所有成员的用户ID列表
      */
@@ -48,6 +54,8 @@ public interface GroupFeignClient {
     List<Long> getMemberUids(@PathVariable Long gid);
 
     /**
+     * 获取群组成员数量。
+     *
      * @param gid 群组ID
      * @return 键为"count"的成员数量map
      */

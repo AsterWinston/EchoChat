@@ -16,6 +16,8 @@ import java.util.List;
 public interface GroupMemberMapper extends BaseMapper<GroupMember> {
 
     /**
+     * 根据群组ID和用户ID查询成员记录。
+     *
      * @param gid 群组ID
      * @param uid 用户ID
      * @return {@link GroupMember}，非成员则返回null
@@ -24,6 +26,8 @@ public interface GroupMemberMapper extends BaseMapper<GroupMember> {
     GroupMember findByGidAndUid(@Param("gid") Long gid, @Param("uid") Long uid);
 
     /**
+     * 查询指定群组中所有成员的UID列表。
+     *
      * @param gid 群组ID
      * @return 群组中的用户ID列表
      */
@@ -31,6 +35,8 @@ public interface GroupMemberMapper extends BaseMapper<GroupMember> {
     List<Long> findUidsByGid(@Param("gid") Long gid);
 
     /**
+     * 查询指定群组中的所有成员记录。
+     *
      * @param gid 群组ID
      * @return 群组中的所有成员列表
      */
@@ -38,6 +44,8 @@ public interface GroupMemberMapper extends BaseMapper<GroupMember> {
     List<GroupMember> findByGid(@Param("gid") Long gid);
 
     /**
+     * 统计指定群组中的成员总数。
+     *
      * @param gid 群组ID
      * @return 群组中的成员数量
      */

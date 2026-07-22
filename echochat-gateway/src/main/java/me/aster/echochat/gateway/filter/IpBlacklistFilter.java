@@ -2,6 +2,7 @@ package me.aster.echochat.gateway.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import me.aster.echochat.common.constant.BusinessConstants;
+import me.aster.echochat.gateway.constant.GatewayConstants;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -93,7 +94,7 @@ public class IpBlacklistFilter implements GlobalFilter, Ordered {
             return "127.0.0.1";
         }
         String host = addr.getHostAddress();
-        if (host != null && host.startsWith("::ffff:")) {
+        if (host != null && host.startsWith(GatewayConstants.IPV4_MAPPED_IPV6_PREFIX)) {
             return host.substring(7);
         }
         return host != null ? host : BusinessConstants.UNKNOWN_IP;

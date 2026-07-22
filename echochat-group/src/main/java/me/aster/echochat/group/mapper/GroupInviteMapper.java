@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Select;
 public interface GroupInviteMapper extends BaseMapper<GroupInvite> {
 
     /**
+     * 根据邀请码查询邀请记录。
+     *
      * @param code 邀请码
      * @return 匹配的 {@link GroupInvite}，不存在则返回null
      */

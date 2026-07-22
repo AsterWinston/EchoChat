@@ -39,7 +39,7 @@ public class FavoriteServiceImpl implements FavoriteService {
      * @throws BusinessException 如果消息不存在或已经收藏过
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Favorite addFavorite(Long uid, Long msgId) {
         Message message = messageMapper.findByMsgId(msgId);
         if (message == null) {

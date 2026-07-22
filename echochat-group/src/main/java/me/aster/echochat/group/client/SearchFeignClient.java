@@ -13,9 +13,19 @@ import java.util.Map;
 @FeignClient(name = "echochat-search", path = "/internal/search")
 public interface SearchFeignClient {
 
+    /**
+     * 将用户数据索引到Elasticsearch。
+     *
+     * @param body 用户数据map
+     */
     @PostMapping("/index/user")
     void indexUser(@RequestBody Map<String, Object> body);
 
+    /**
+     * 将群组数据索引到Elasticsearch。
+     *
+     * @param body 群组数据map
+     */
     @PostMapping("/index/group")
     void indexGroup(@RequestBody Map<String, Object> body);
 }

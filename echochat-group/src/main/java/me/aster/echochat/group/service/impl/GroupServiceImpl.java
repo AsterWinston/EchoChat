@@ -28,6 +28,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
 
+    private static final String FIELD_NAME = "name";
+    private static final String FIELD_AVATAR = "avatar";
+    private static final String FIELD_ANNOUNCEMENT = "announcement";
+    private static final String FIELD_SLOW_MODE_INTERVAL = "slowModeInterval";
+
     private final GroupInfoMapper groupInfoMapper;
     private final GroupMemberMapper groupMemberMapper;
     private final SnowflakeIdGenerator idGenerator;
@@ -37,7 +42,7 @@ public class GroupServiceImpl implements GroupService {
      * 创建指定名称的新群组。调用者成为所有者。慢速模式默认禁用。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public GroupInfo createGroup(Long ownerUid, String name) {
         if (name == null || name.isBlank()) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "Group name cannot be empty");
@@ -101,7 +106,7 @@ public class GroupServiceImpl implements GroupService {
      * 更新群组元数据（名称、头像、公告、慢速模式间隔）。仅所有者和管理员可调用。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public GroupInfo updateGroup(Long uid, Long gid, Map<String, Object> updates) {
         GroupMember member = groupMemberMapper.findByGidAndUid(gid, uid);
         if (member == null) {
@@ -121,23 +126,23 @@ public class GroupServiceImpl implements GroupService {
         update.setGid(gid);
         update.setUpdatedAt(LocalDateTime.now());
 
-        if (updates.containsKey("name")) {
-            String name = (String) updates.get("name");
+        if (updates.containsKey(FIELD_NAME)) {
+            String name = (String) updates.get(FIELD_NAME);
             if (name != null && !name.isBlank() && name.length() <= BusinessConstants.GROUP_NAME_MAX_LENGTH) {
                 update.setName(name);
                 group.setName(name);
             }
         }
-        if (updates.containsKey("avatar")) {
-            String avatar = (String) updates.get("avatar");
+        if (updates.containsKey(FIELD_AVATAR)) {
+            String avatar = (String) updates.get(FIELD_AVATAR);
             update.setAvatar(avatar);
             group.setAvatar(avatar);
         }
-        if (updates.containsKey("announcement")) {
-            update.setAnnouncement((String) updates.get("announcement"));
-            group.setAnnouncement((String) updates.get("announcement"));
+        if (updates.containsKey(FIELD_ANNOUNCEMENT)) {
+            update.setAnnouncement((String) updates.get(FIELD_ANNOUNCEMENT));
+            group.setAnnouncement((String) updates.get(FIELD_ANNOUNCEMENT));
         }
-        if (updates.containsKey("slowModeInterval")) {
+        if (updates.containsKey(FIELD_SLOW_MODE_INTERVAL)) {
             Integer interval = (Integer) updates.get(BusinessConstants.MEMBERSHIP_KEY_SLOW_MODE_INTERVAL);
             update.setSlowModeInterval(interval);
             group.setSlowModeInterval(interval);
@@ -153,7 +158,7 @@ public class GroupServiceImpl implements GroupService {
      * 彻底解散群组。仅所有者可解散。所有成员被移除，群组记录被删除。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void dissolveGroup(Long uid, Long gid) {
         GroupInfo group = groupInfoMapper.selectById(gid);
         if (group == null) {
@@ -173,7 +178,7 @@ public class GroupServiceImpl implements GroupService {
      * 将群组所有权转让给另一个成员。仅当前所有者可转让。原所有者变为管理员，新所有者成为所有者。
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void transferOwner(Long uid, Long gid, Long newOwnerUid) {
         GroupInfo group = groupInfoMapper.selectById(gid);
         if (group == null) {

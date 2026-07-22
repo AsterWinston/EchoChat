@@ -39,7 +39,7 @@ public class MessageTxService {
      *
      * @param ctx 待处理消息上下文
      */
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void persist(PendingMessageContext ctx) {
         retryOnDeadlock(() -> persistInternal(ctx));
     }
@@ -129,16 +129,18 @@ public class MessageTxService {
     /**
      * 检测到死锁时最多重试3次，使用短退避让竞争事务有时间提交。
      */
+    private static final int DEADLOCK_RETRY_MAX = 3;
+
     private void retryOnDeadlock(Runnable operation) {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < DEADLOCK_RETRY_MAX; i++) {
             try {
                 operation.run();
                 return;
             } catch (org.springframework.dao.TransientDataAccessException e) {
-                if (i == 2) {
+                if (i == DEADLOCK_RETRY_MAX - 1) {
                     throw e;
                 }
-                log.warn("Transient data access error detected, retrying ({}/3): {}", i + 1, e.getMessage());
+                log.warn("Transient data access error detected, retrying ({}/{}): {}", i + 1, DEADLOCK_RETRY_MAX, e.getMessage());
                 try { Thread.sleep(20L * (i + 1)); } catch (InterruptedException ignored) {}
             }
         }

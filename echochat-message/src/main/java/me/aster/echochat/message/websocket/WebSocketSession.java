@@ -21,6 +21,8 @@ import java.util.Map;
 @Slf4j
 public class WebSocketSession {
 
+    private static final String ACCESS_TOKEN_TYPE = "access";
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final Long uid;
@@ -51,7 +53,7 @@ public class WebSocketSession {
                     .getPayload();
 
             String type = claims.get("type", String.class);
-            if (!"access".equals(type)) {
+            if (!ACCESS_TOKEN_TYPE.equals(type)) {
                 return null;
             }
 

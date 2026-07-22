@@ -81,6 +81,8 @@ public class FileServiceImpl implements FileService {
             "file", Set.of("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip", "rar", "7z")
     );
 
+    private static final String DOT = ".";
+
     /** 所有待初始化的存储桶名称 */
     private static final Set<String> ALL_BUCKETS = Set.of(
             BUCKET_AVATARS, BUCKET_IMAGES, BUCKET_FILES, BUCKET_VIDEOS, BUCKET_VOICES
@@ -122,14 +124,14 @@ public class FileServiceImpl implements FileService {
         if (ext == null || ext.isBlank()) {
             throw new IllegalArgumentException("File extension is required");
         }
-        if (ext.startsWith(".")) {
+        if (ext.startsWith(DOT)) {
             ext = ext.substring(1);
         }
         ext = ext.toLowerCase();
 
         Set<String> allowed = ALLOWED_EXTENSIONS.getOrDefault(type, Set.of());
         if (allowed.isEmpty() || !allowed.contains(ext)) {
-            throw new IllegalArgumentException("Unsupported file type: ." + ext);
+            throw new IllegalArgumentException("Unsupported file type: " + DOT + ext);
         }
 
         String bucket = BUCKET_MAP.getOrDefault(type, BUCKET_FILES);
@@ -331,14 +333,14 @@ public class FileServiceImpl implements FileService {
         if (uid == null) {
             throw new IllegalArgumentException("User ID is required");
         }
-        if (ext.startsWith(".")) {
+        if (ext.startsWith(DOT)) {
             ext = ext.substring(1);
         }
         ext = ext.toLowerCase();
 
         Set<String> allowed = ALLOWED_EXTENSIONS.getOrDefault(type, Set.of());
         if (allowed.isEmpty() || !allowed.contains(ext)) {
-            throw new IllegalArgumentException("Unsupported file type: ." + ext);
+            throw new IllegalArgumentException("Unsupported file type: " + DOT + ext);
         }
 
         String bucket = BUCKET_MAP.getOrDefault(type, BUCKET_FILES);

@@ -36,7 +36,7 @@ public class GroupJoinRequestServiceImpl implements GroupJoinRequestService {
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public GroupJoinRequest apply(Long uid, Long gid, String message) {
         GroupInfo group = groupInfoMapper.selectById(gid);
         if (group == null) {
@@ -68,7 +68,7 @@ public class GroupJoinRequestServiceImpl implements GroupJoinRequestService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public GroupJoinRequest approve(Long processorUid, Long requestId) {
         GroupJoinRequest request = requestMapper.selectById(requestId);
         if (request == null) {
@@ -79,7 +79,9 @@ public class GroupJoinRequestServiceImpl implements GroupJoinRequestService {
         }
 
         GroupMember processor = groupMemberMapper.findByGidAndUid(request.getGid(), processorUid);
-        if (processor == null || (!BusinessConstants.ROLE_OWNER.equals(processor.getRole()) && !BusinessConstants.ROLE_ADMIN.equals(processor.getRole()))) {
+        boolean isOwner = processor != null && BusinessConstants.ROLE_OWNER.equals(processor.getRole());
+        boolean isAdmin = processor != null && BusinessConstants.ROLE_ADMIN.equals(processor.getRole());
+        if (!isOwner && !isAdmin) {
             throw new BusinessException(ResultCode.FORBIDDEN.getCode(), "Only owner and admins can process join requests");
         }
 
@@ -119,7 +121,7 @@ public class GroupJoinRequestServiceImpl implements GroupJoinRequestService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public GroupJoinRequest reject(Long processorUid, Long requestId) {
         GroupJoinRequest request = requestMapper.selectById(requestId);
         if (request == null) {
@@ -130,7 +132,9 @@ public class GroupJoinRequestServiceImpl implements GroupJoinRequestService {
         }
 
         GroupMember processor = groupMemberMapper.findByGidAndUid(request.getGid(), processorUid);
-        if (processor == null || (!BusinessConstants.ROLE_OWNER.equals(processor.getRole()) && !BusinessConstants.ROLE_ADMIN.equals(processor.getRole()))) {
+        boolean isOwner = processor != null && BusinessConstants.ROLE_OWNER.equals(processor.getRole());
+        boolean isAdmin = processor != null && BusinessConstants.ROLE_ADMIN.equals(processor.getRole());
+        if (!isOwner && !isAdmin) {
             throw new BusinessException(ResultCode.FORBIDDEN.getCode(), "Only owner and admins can process join requests");
         }
 

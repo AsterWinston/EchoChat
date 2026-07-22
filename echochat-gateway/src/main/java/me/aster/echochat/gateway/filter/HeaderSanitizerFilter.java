@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import me.aster.echochat.common.constant.BusinessConstants;
 import me.aster.echochat.common.result.Result;
+import me.aster.echochat.gateway.constant.GatewayConstants;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -46,7 +47,7 @@ public class HeaderSanitizerFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getURI().getPath();
-        if (path.contains("/internal/")) {
+        if (path.contains(GatewayConstants.INTERNAL_PATH_PREFIX)) {
             log.warn("Blocked external access to internal path: {} from {}",
                     path, exchange.getRequest().getRemoteAddress());
             return writeResult(exchange, HttpStatus.FORBIDDEN, Result.fail(403, "Forbidden"));

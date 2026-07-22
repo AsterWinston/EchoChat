@@ -320,7 +320,9 @@ public class GroupController {
     public Result<List<GroupJoinRequest>> getPendingRequests(@PathVariable Long gid) {
         Long uid = UserContext.get();
         GroupMember member = memberService.getMember(gid, uid);
-        if (member == null || (!BusinessConstants.ROLE_OWNER.equals(member.getRole()) && !BusinessConstants.ROLE_ADMIN.equals(member.getRole()))) {
+        boolean isOwner = member != null && BusinessConstants.ROLE_OWNER.equals(member.getRole());
+        boolean isAdmin = member != null && BusinessConstants.ROLE_ADMIN.equals(member.getRole());
+        if (!isOwner && !isAdmin) {
             throw new BusinessException(ResultCode.FORBIDDEN.getCode(), "Only owner and admins can view pending requests");
         }
         return Result.ok(joinRequestService.getPendingRequests(gid));

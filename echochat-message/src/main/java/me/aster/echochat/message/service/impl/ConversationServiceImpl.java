@@ -316,7 +316,7 @@ if (BusinessConstants.SESSION_TYPE_SINGLE.equals(sessionType)) {
      * @param pinned      true=置顶，false=取消置顶
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void pinConversation(Long uid, String sessionType, String targetId, boolean pinned) {
         LambdaUpdateWrapper<Conversation> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(Conversation::getUid, uid)
@@ -327,7 +327,7 @@ if (BusinessConstants.SESSION_TYPE_SINGLE.equals(sessionType)) {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void setDnd(Long uid, String sessionType, String targetId, boolean dnd) {
         LambdaUpdateWrapper<Conversation> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(Conversation::getUid, uid)
@@ -345,7 +345,7 @@ if (BusinessConstants.SESSION_TYPE_SINGLE.equals(sessionType)) {
      * @param targetId    对端UID或群组ID（字符串形式）
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteConversation(Long uid, String sessionType, String targetId) {
         LambdaQueryWrapper<Conversation> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Conversation::getUid, uid)

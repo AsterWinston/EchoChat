@@ -59,6 +59,12 @@ public class WebSocketPushService {
     /** ACK退避重试间隔：5秒、30秒、5分钟 */
     private static final long[] ACK_RETRY_INTERVALS = {5000L, 30000L, 300000L};
 
+    /** 分割"uid:msgId"后的期望段数 */
+    private static final int ACK_MEMBER_PARTS = 2;
+    private static final int LOCK_LEASE_SECONDS = 4;
+    private static final int ACK_RETRY_MAX_RETRIES = 2;
+    private static final String STOPPED_MSG = "STOPPED";
+
     /** 本实例分布式锁获取的唯一所有者令牌 */
     private static final String LOCK_TOKEN = java.util.UUID.randomUUID().toString();
 
@@ -344,7 +350,7 @@ public class WebSocketPushService {
     @Scheduled(fixedDelay = 5000)
     public void retryUnackedMessages() {
         try {
-            if (!RedisLockUtil.tryLock(redisTemplate, ACK_RETRY_LOCK_KEY, LOCK_TOKEN, Duration.ofSeconds(4))) {
+            if (!RedisLockUtil.tryLock(redisTemplate, ACK_RETRY_LOCK_KEY, LOCK_TOKEN, Duration.ofSeconds(LOCK_LEASE_SECONDS))) {
                 return;
             }
             try {
@@ -374,7 +380,7 @@ public class WebSocketPushService {
     private void retryPendingEntry(String member) {
         try {
             String[] parts = member.split(":");
-            if (parts.length != 2) {
+            if (parts.length != ACK_MEMBER_PARTS) {
                 removePendingEntry(member);
                 return;
             }
@@ -389,7 +395,7 @@ public class WebSocketPushService {
                 return;
             }
 
-            if (retryCount >= 2) {
+            if (retryCount >= ACK_RETRY_MAX_RETRIES) {
                 storeOffline(uid, message);
                 removePendingEntry(member);
                 log.info("ACK retry exhausted for msgId={}, uid={}, stored to offline", msgId, uid);
@@ -444,7 +450,7 @@ public class WebSocketPushService {
                 log.warn("updateLastSeen failed for uid={}: {}", uid, e.getMessage());
             }
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("STOPPED")) {
+            if (e.getMessage() != null && e.getMessage().contains(STOPPED_MSG)) {
                 log.debug("Redis unavailable during shutdown: uid={}", uid);
             } else {
                 log.warn("Failed to update offline status in Redis: uid={}", uid, e);
@@ -465,7 +471,7 @@ public class WebSocketPushService {
             OnlinePresenceUtil.markOnline(redisTemplate, uid, deviceId);
             routeRegistry.register(uid);
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("STOPPED")) {
+            if (e.getMessage() != null && e.getMessage().contains(STOPPED_MSG)) {
                 log.debug("Redis unavailable during shutdown: uid={}", uid);
             } else {
                 log.warn("Failed to record online status in Redis: uid={}", uid, e);

@@ -17,6 +17,8 @@ import java.util.List;
 public interface FeedTimelineMapper extends BaseMapper<FeedTimeline> {
 
     /**
+     * 根据所有者查询分页的时间线条目。
+     *
      * @param ownerUid   时间线所有者UID
      * @param beforeTime 基于时间的分页游标
      * @param limit      最大结果数
@@ -29,6 +31,8 @@ public interface FeedTimelineMapper extends BaseMapper<FeedTimeline> {
                                    @Param("limit") int limit);
 
     /**
+     * 根据动态ID删除时间线条目。
+     *
      * @param momentId 动态ID
      * @return 删除的行数
      */

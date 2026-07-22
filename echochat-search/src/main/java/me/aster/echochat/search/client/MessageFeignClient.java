@@ -15,6 +15,12 @@ import java.util.Map;
 @FeignClient(name = "echochat-message", path = "/internal/message")
 public interface MessageFeignClient {
 
+    /**
+     * 获取已删除消息的ID列表，用于过滤搜索结果。
+     *
+     * @param body 包含查询条件的参数map
+     * @return 已删除消息的ID列表
+     */
     @PostMapping("/deleted-msg-ids")
     List<Long> getDeletedMsgIds(@RequestBody Map<String, Object> body);
 }

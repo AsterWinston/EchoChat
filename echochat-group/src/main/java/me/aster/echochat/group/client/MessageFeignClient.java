@@ -12,6 +12,11 @@ import java.util.Map;
 @FeignClient(name = "echochat-message", path = "/internal/message")
 public interface MessageFeignClient {
 
+    /**
+     * 向用户或群组发送系统消息。
+     *
+     * @param body 包含gid、fromUid、content等字段的消息内容
+     */
     @PostMapping("/system")
     void sendSystemMessage(@RequestBody Map<String, Object> body);
 }

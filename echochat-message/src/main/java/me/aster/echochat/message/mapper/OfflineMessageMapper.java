@@ -18,6 +18,8 @@ import java.util.List;
 public interface OfflineMessageMapper extends BaseMapper<OfflineMessage> {
 
     /**
+     * 查询指定用户的所有离线消息，按序号升序排列。
+     *
      * @param uid 用户ID
      * @return 该用户的所有离线消息，按序号升序排列
      */

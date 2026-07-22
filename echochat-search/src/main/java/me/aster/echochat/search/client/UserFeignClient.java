@@ -18,12 +18,20 @@ import java.util.List;
 public interface UserFeignClient {
 
     /**
+     * 根据关键词搜索用户。
+     *
      * @param keyword 用于匹配用户资料的搜索关键词
      * @return 匹配的{@link User}记录列表
      */
     @GetMapping("/search")
     List<User> searchUsers(@RequestParam("keyword") String keyword);
 
+    /**
+     * 根据UID列表批量查询用户。
+     *
+     * @param uids 用户ID列表
+     * @return 匹配的用户列表
+     */
     @PostMapping("/batch")
     List<User> getUsersByUids(@RequestBody List<Long> uids);
 }

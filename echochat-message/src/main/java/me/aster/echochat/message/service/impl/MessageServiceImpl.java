@@ -192,7 +192,7 @@ public class MessageServiceImpl implements MessageService {
      * @throws BusinessException 如果消息不存在、不是发送者、已撤回或超过2分钟
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Message recallMessage(Long uid, Long msgId) {
         Message message = messageMapper.findByMsgId(msgId);
         if (message == null) {
@@ -255,7 +255,7 @@ public class MessageServiceImpl implements MessageService {
      * @throws BusinessException 如果消息不存在或没有权限
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteMessage(Long uid, Long msgId) {
         Message message = messageMapper.findByMsgId(msgId);
         if (message == null) {
@@ -572,7 +572,7 @@ public class MessageServiceImpl implements MessageService {
      * @throws BusinessException 如果消息不存在或已置顶
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void pinMessage(Long uid, Long targetUid, Long msgId, String contentSummary) {
         Message message = messageMapper.findByMsgId(msgId);
         if (message == null) {
@@ -714,6 +714,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     /** 共享的ObjectMapper实例，用于JSON验证 */
+    private static final String FIELD_NAME = "name";
+    private static final String FIELD_URL = "url";
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
@@ -737,19 +740,19 @@ public class MessageServiceImpl implements MessageService {
                     break;
                 case BusinessConstants.MSG_TYPE_FILE:
                     Map<String, Object> file = OBJECT_MAPPER.readValue(content, Map.class);
-                    if (file.get("name") == null || file.get("url") == null) {
+                    if (file.get(FIELD_NAME) == null || file.get(FIELD_URL) == null) {
                         throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "File message must contain name and url");
                     }
                     break;
                 case BusinessConstants.MSG_TYPE_VOICE:
                     Map<String, Object> voice = OBJECT_MAPPER.readValue(content, Map.class);
-                    if (voice.get("url") == null) {
+                    if (voice.get(FIELD_URL) == null) {
                         throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "Voice message must contain url");
                     }
                     break;
                 case BusinessConstants.MSG_TYPE_VIDEO:
                     Map<String, Object> video = OBJECT_MAPPER.readValue(content, Map.class);
-                    if (video.get("url") == null) {
+                    if (video.get(FIELD_URL) == null) {
                         throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "Video message must contain url");
                     }
                     break;
@@ -794,7 +797,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void unpinMessage(Long uid, Long msgId) {
         Message message = messageMapper.findByMsgId(msgId);
         if (message == null) {
@@ -848,7 +851,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Message sendSystemGroupMessage(Long gid, Long fromUid, String content) {
         String toId = String.valueOf(gid);
         String seqKey = RedisKeyConstants.SEQ_PREFIX + RedisKeyConstants.SEQ_GROUP_SUFFIX + gid;

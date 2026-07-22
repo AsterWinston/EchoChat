@@ -46,7 +46,7 @@ public class MessageReadService {
      * @param senderUid 原始发送者
      * @param toSeq     标记已读的序号上限（包含）
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void markMessagesAsRead(Long readerUid, Long senderUid, Long toSeq) {
         List<Message> messages = messageMapper.findUnreadMessages(senderUid, String.valueOf(readerUid), toSeq);
         if (messages.isEmpty()) {

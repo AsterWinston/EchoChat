@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketChannelManager {
 
     /** 按用户ID分组，再按设备ID分组的通道 */
-    private final Map<Long, Map<String, Set<Channel>>> userChannels = new ConcurrentHashMap<>();
+    private final Map<Long, Map<String, Set<Channel>>> userChannels = new ConcurrentHashMap<>(16);
 
     /**
      * @param uid      用户ID
@@ -27,7 +27,7 @@ public class WebSocketChannelManager {
      * @param channel  要注册的Netty通道
      */
     public void register(Long uid, String deviceId, Channel channel) {
-        userChannels.computeIfAbsent(uid, k -> new ConcurrentHashMap<>())
+        userChannels.computeIfAbsent(uid, k -> new ConcurrentHashMap<>(4))
                 .computeIfAbsent(deviceId, k -> ConcurrentHashMap.newKeySet())
                 .add(channel);
     }

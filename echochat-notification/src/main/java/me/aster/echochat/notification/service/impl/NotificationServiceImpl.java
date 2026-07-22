@@ -45,7 +45,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @return 创建的通知
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Notification createNotification(Long uid, String type, String title, String content, Long relatedId) {
         Notification notification = new Notification();
         notification.setId(idGenerator.nextId());
@@ -81,7 +81,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param event 从主题消费的通知事件
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void createFromEvent(me.aster.echochat.common.dto.NotificationEvent event) {
         Notification notification = new Notification();
         notification.setId(idGenerator.nextId());
