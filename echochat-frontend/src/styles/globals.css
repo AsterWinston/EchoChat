@@ -1,0 +1,169 @@
+@theme {
+  --color-primary-50: #e6f9ff;
+  --color-primary-100: #b3ecff;
+  --color-primary-200: #80dfff;
+  --color-primary-300: #4dd2ff;
+  --color-primary-400: #1ac5ff;
+  --color-primary-500: #00BFFF;
+  --color-primary-600: #0099cc;
+  --color-primary-700: #007399;
+  --color-primary-800: #004d66;
+  --color-primary-900: #002633;
+  --color-bg-primary: #f5f7fa;
+  --color-bg-secondary: #ffffff;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-border-light: #e5e7eb;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-active: #f0f1f3;
+}
+
+:root {
+  --color-primary-50: #e6f9ff;
+  --color-primary-100: #b3ecff;
+  --color-primary-200: #80dfff;
+  --color-primary-300: #4dd2ff;
+  --color-primary-400: #1ac5ff;
+  --color-primary-500: #00BFFF;
+  --color-primary-600: #0099cc;
+  --color-primary-700: #007399;
+  --color-primary-800: #004d66;
+  --color-primary-900: #002633;
+  --color-bg-primary: #f5f7fa;
+  --color-bg-secondary: #ffffff;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-border-light: #e5e7eb;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f3f4f6;
+  --color-surface-active: #f0f1f3;
+}
+
+.dark {
+  --color-primary-50: #0d2137;
+  --color-primary-100: #0c2d4a;
+  --color-primary-200: #0b3963;
+  --color-primary-300: #0a457c;
+  --color-primary-400: #095195;
+  --color-primary-500: #00BFFF;
+  --color-primary-600: #1ac5ff;
+  --color-primary-700: #4dd2ff;
+  --color-primary-800: #80dfff;
+  --color-primary-900: #b3ecff;
+  --color-bg-primary: #0f1729;
+  --color-bg-secondary: #1a2332;
+  --color-text-primary: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+  --color-border-light: #1f2937;
+  --color-surface: #1a2332;
+  --color-surface-hover: #1f2937;
+  --color-surface-active: #374151;
+}
+
+*:is(button, [role="button"], a, input, textarea, select) {
+  transition-property: all;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+body {
+  margin: 0;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@keyframes echochat-fade-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes echochat-fade-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
+@keyframes echochat-slide-in-right {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes echochat-slide-out-right {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes echochat-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes echochat-scale-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes echochat-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes echochat-message-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fade-in {
+  animation: echochat-fade-in 200ms ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: echochat-fade-out 150ms ease-in forwards;
+}
+
+.animate-slide-in-right {
+  animation: echochat-slide-in-right 250ms ease-out forwards;
+}
+
+.animate-slide-out-right {
+  animation: echochat-slide-out-right 200ms ease-in forwards;
+}
+
+.animate-scale-in {
+  animation: echochat-scale-in 200ms ease-out forwards;
+}
+
+.animate-scale-out {
+  animation: echochat-scale-out 150ms ease-in forwards;
+}
+
+.animate-spin {
+  animation: echochat-spin 800ms linear infinite;
+}
+
+.animate-message-in {
+  animation: echochat-message-in 250ms ease-out forwards;
+}
+
+[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: rgb(107 114 128 / 0.5);
+  pointer-events: none;
+}
+[contenteditable] br[data-cke-filler] {
+  display: none;
+}

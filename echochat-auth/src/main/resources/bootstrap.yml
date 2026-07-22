@@ -1,0 +1,21 @@
+# 服务发现和配置中心的Bootstrap配置
+spring:
+  application:
+    name: echochat-auth
+  # Nacos 服务发现与配置
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+        group: DEFAULT_GROUP
+        file-extension: yml
+
+# 服务端口
+server:
+  port: 8001

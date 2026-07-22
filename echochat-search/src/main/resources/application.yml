@@ -1,0 +1,51 @@
+spring:
+  elasticsearch:
+    uris: http://${ES_HOST:ubuntu}:${ES_PORT:9200}
+    username: elastic
+    password: ${ES_PASSWORD:changeme123}
+    connection-timeout: 5s
+    socket-timeout: 10s
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+    redis:
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+  lazy-initialization: true
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 3000
+            read-timeout: 5000
+
+rocketmq:
+  name-server: ${ROCKETMQ_HOST:ubuntu}:9876
+  consumer:
+    group: echochat-search-consumer
+
+snowflake:
+  worker-id: 8
+  datacenter-id: 1
+
+# 服务间（/internal/**）认证共享令牌（开发默认值；生产环境通过INTERNAL_TOKEN环境变量覆盖）
+security:
+  internal-token: ${INTERNAL_TOKEN:444d651da438dde74ab860fe8d28ec99db174f365081c218a98f4a078314bb6c}
+
+logging:
+  level:
+    root: INFO
+    org.apache.rocketmq: WARN
+    io.netty: WARN
+    com.alibaba.nacos: WARN
+    org.springframework.cloud: WARN
+    org.springframework.data.redis: WARN
+    me.aster.echochat: DEBUG

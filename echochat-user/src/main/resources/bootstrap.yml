@@ -1,0 +1,22 @@
+# Spring Cloud 在 application.yml 之前加载的引导级别配置
+spring:
+  # 服务标识
+  application:
+    name: echochat-user
+  # Nacos 服务发现与配置 center
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+        group: DEFAULT_GROUP
+        file-extension: yml
+
+# 服务端口 for this microservice
+server:
+  port: 8002

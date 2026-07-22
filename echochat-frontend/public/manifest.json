@@ -1,0 +1,9 @@
+{
+  "name": "EchoChat",
+  "short_name": "EchoChat",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#00BFFF",
+  "icons": []
+}

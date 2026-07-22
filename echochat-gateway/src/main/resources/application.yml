@@ -1,0 +1,82 @@
+# 网关路由与应用配置
+spring:
+  cloud:
+    # Spring Cloud Gateway 路由定义
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://echochat-auth
+          predicates:
+            - Path=/api/auth/**
+        - id: user-service
+          uri: lb://echochat-user
+          predicates:
+            - Path=/api/user/**,/api/friend/**
+        - id: message-service
+          uri: lb://echochat-message
+          predicates:
+            - Path=/api/message/**
+        - id: group-service
+          uri: lb://echochat-group
+          predicates:
+            - Path=/api/group/**
+        - id: file-service
+          uri: lb://echochat-file
+          predicates:
+            - Path=/api/file/**
+        - id: favorite-service
+          uri: lb://echochat-message
+          predicates:
+            - Path=/api/favorite/**
+        - id: search-service
+          uri: lb://echochat-search
+          predicates:
+            - Path=/api/search/**
+        - id: moment-service
+          uri: lb://echochat-moment
+          predicates:
+            - Path=/api/moment/**
+        - id: notification-service
+          uri: lb://echochat-notification
+          predicates:
+            - Path=/api/notification/**
+  # Redis连接，用于Token黑名单、IP黑名单和限流
+  data:
+    redis:
+      host: ${REDIS_HOST:ubuntu}
+      port: 6379
+      password: ${REDIS_PASSWORD:redis123456}
+      timeout: 1s
+      connect-timeout: 1s
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+
+# JWT签名密钥（Base64编码）（开发默认值；生产环境通过JWT_SECRET环境变量覆盖）
+jwt:
+  secret: ${JWT_SECRET:GImwNAVTCz8ZyhTvnjyaeog0dLM2QtQQpbXFyAN2NP1BW2hc6wKd1cfpCdbFScrB}
+
+# 限流配置
+rate-limit:
+  global:
+    limit: 100
+    window: 1
+  login:
+    limit: 5
+    window: 60
+  message:
+    limit: 30
+    window: 1
+
+logging:
+  level:
+    root: INFO
+    org.apache.rocketmq: WARN
+    io.netty: WARN
+    com.alibaba.nacos: WARN
+    org.springframework.cloud: WARN
+    org.springframework.data.redis: WARN
+    me.aster.echochat: DEBUG

@@ -1,0 +1,42 @@
+# 认证服务应用配置
+spring:
+  # Redis连接，用于Token和设备状态存储
+  data:
+    redis:
+      host: ${REDIS_HOST:ubuntu}
+      port: 6379
+      password: ${REDIS_PASSWORD:redis123456}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+  # 允许Bean覆盖，用于共享common模块的Bean
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 3000
+            read-timeout: 5000
+
+# JWT签名密钥（Base64编码）（开发默认值；生产环境通过JWT_SECRET环境变量覆盖）
+jwt:
+  secret: ${JWT_SECRET:GImwNAVTCz8ZyhTvnjyaeog0dLM2QtQQpbXFyAN2NP1BW2hc6wKd1cfpCdbFScrB}
+
+# 服务间（/internal/**）认证共享令牌（开发默认值；生产环境通过INTERNAL_TOKEN环境变量覆盖）
+security:
+  internal-token: ${INTERNAL_TOKEN:444d651da438dde74ab860fe8d28ec99db174f365081c218a98f4a078314bb6c}
+
+logging:
+  level:
+    root: INFO
+    org.apache.rocketmq: WARN
+    io.netty: WARN
+    com.alibaba.nacos: WARN
+    org.springframework.cloud: WARN
+    org.springframework.data.redis: WARN
+    me.aster.echochat: DEBUG

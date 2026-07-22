@@ -1,0 +1,86 @@
+# --- 数据源 ---
+# MySQL 连接配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:ubuntu}:${MYSQL_PORT:3306}/echochat?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root123456}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1500000
+      keepalive-time: 60000
+      connection-test-query: SELECT 1
+      validation-timeout: 3000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:ubuntu}
+      port: 6379
+      password: ${REDIS_PASSWORD:redis123456}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 3000
+            read-timeout: 5000
+
+# 启用下划线转驼峰映射和输入ID策略
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: input
+
+# 分布式唯一ID生成的工作节点和数据中心ID
+snowflake:
+  worker-id: 3
+  datacenter-id: 1
+
+# Token验证的Base64编码HMAC密钥（开发默认值；生产环境通过JWT_SECRET环境变量覆盖）
+jwt:
+  secret: ${JWT_SECRET:GImwNAVTCz8ZyhTvnjyaeog0dLM2QtQQpbXFyAN2NP1BW2hc6wKd1cfpCdbFScrB}
+
+# 服务间（/internal/**）认证共享令牌（开发默认值；生产环境通过INTERNAL_TOKEN环境变量覆盖）
+security:
+  internal-token: ${INTERNAL_TOKEN:444d651da438dde74ab860fe8d28ec99db174f365081c218a98f4a078314bb6c}
+
+# WebSocket
+websocket:
+  host: ${REDIS_HOST:ubuntu}
+  port: 9010
+
+# --- Elasticsearch ---
+echochat:
+  elasticsearch:
+    uris: http://${ES_HOST:ubuntu}:${ES_PORT:9200}
+    username: elastic
+    password: ${ES_PASSWORD:changeme123}
+
+
+rocketmq:
+  name-server: ${ROCKETMQ_HOST:ubuntu}:9876
+  producer:
+    group: echochat-message-producer
+
+logging:
+  level:
+    root: INFO
+    org.apache.rocketmq: WARN
+    io.netty: WARN
+    com.alibaba.nacos: WARN
+    org.springframework.cloud: WARN
+    org.springframework.data.redis: WARN
+    me.aster.echochat: DEBUG

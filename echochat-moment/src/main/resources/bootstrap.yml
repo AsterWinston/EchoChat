@@ -1,0 +1,22 @@
+
+# EchoChat 朋友圈服务 - Nacos 引导配置
+
+
+spring:
+  application:
+    name: echochat-moment
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+        group: DEFAULT_GROUP
+        file-extension: yml
+
+server:
+  port: 8005

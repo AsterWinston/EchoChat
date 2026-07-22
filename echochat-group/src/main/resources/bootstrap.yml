@@ -1,0 +1,25 @@
+
+# EchoChat 群组服务 - Nacos 引导配置
+
+
+spring:
+  # 服务注册名称
+  application:
+    name: echochat-group
+  # Nacos 服务发现与配置中心
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+        group: DEFAULT_GROUP
+        file-extension: yml
+
+# HTTP 服务端口
+server:
+  port: 8004

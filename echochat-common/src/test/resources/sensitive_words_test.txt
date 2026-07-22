@@ -1,0 +1,6 @@
+badword
+spam
+  malware
+attack
+
+hack

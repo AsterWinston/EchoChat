@@ -1,0 +1,24 @@
+# 鈹€鈹€ Application 鈹€鈹€
+# Nacos 注册与发现使用的服务名称
+spring:
+  application:
+    name: echochat-message
+
+  # 鈹€鈹€ Nacos 鈹€鈹€
+  # 服务发现与配置中心设置
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        server-addr: ${NACOS_HOST:ubuntu}:8848
+        username: nacos
+        password: ${NACOS_PASSWORD:nacos}
+        group: DEFAULT_GROUP
+        file-extension: yml
+
+# 鈹€鈹€ Server 鈹€鈹€
+server:
+  port: 8003

@@ -1,0 +1,230 @@
+services:
+
+  # ==========================================================
+  # MySQL
+  # ==========================================================
+
+  mysql:
+    image: mysql:8.0.36
+    container_name: echochat-mysql
+    restart: unless-stopped
+    mem_limit: 1024m
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-root123456}
+      TZ: Asia/Shanghai
+
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+      - --performance-schema=OFF
+      - --innodb-buffer-pool-size=512M
+      - --max-connections=200
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks: [echochat-net]
+
+
+  # ==========================================================
+  # Redis
+  # ==========================================================
+  redis:
+    image: redis:7.2-alpine
+    container_name: echochat-redis
+    restart: unless-stopped
+    mem_limit: 512m
+
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123456}
+
+    command:
+      - sh
+      - -c
+      - >
+        redis-server
+        --appendonly yes
+        --requirepass "$$REDIS_PASSWORD"
+        --maxmemory 256mb
+        --maxmemory-policy allkeys-lru
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - ./data/redis:/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks: [echochat-net]
+
+
+  # ==========================================================
+  # Nacos
+  # ==========================================================
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: echochat-nacos
+    restart: unless-stopped
+    mem_limit: 1536m
+
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: ${MYSQL_PASSWORD:-root123456}
+      MYSQL_SERVICE_DB_PARAM: "allowPublicKeyRetrieval=true&useSSL=false"
+      JVM_XMS: 512m
+      JVM_XMX: 1024m
+      JVM_XMN: 384m
+      NACOS_AUTH_ENABLE: "true"
+      NACOS_AUTH_IDENTITY_KEY: echochat-nacos-server
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_IDENTITY_VALUE:-nacos-identity-secret-change-in-production}
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN:-SecretKey01234567890123456789012345678901234567890123456789}
+
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks: [echochat-net]
+
+
+  # ==========================================================
+  # RocketMQ 名称服务器
+  # ==========================================================
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.1.4
+    container_name: echochat-rmq-namesrv
+    restart: unless-stopped
+    mem_limit: 384m
+
+    environment:
+      JAVA_OPT_EXT: "-Xms128m -Xmx256m"
+
+    command: ["sh", "mqnamesrv"]
+
+    ports:
+      - "9876:9876"
+
+    networks: [echochat-net]
+
+
+  # ==========================================================
+  # RocketMQ 代理 (稳定版)
+  # ==========================================================
+  rocketmq-broker:
+    image: apache/rocketmq:5.1.4
+    container_name: echochat-rmq-broker
+    restart: unless-stopped
+    mem_limit: 1536m
+
+    environment:
+      JAVA_OPT_EXT: "-Xms512m -Xmx1024m"
+      NAMESRV_ADDR: echochat-rmq-namesrv:9876
+
+    command:
+      - sh
+      - mqbroker
+      - -c
+      - /etc/rocketmq/broker.conf
+
+    ports:
+      - "10911:10911"
+
+    volumes:
+      - ./rocketmq/broker.conf:/etc/rocketmq/broker.conf
+
+    depends_on:
+      - rocketmq-namesrv
+
+    networks: [echochat-net]
+
+
+  # ==========================================================
+  # Elasticsearch
+  # ==========================================================
+  elasticsearch:
+    image: elasticsearch:8.13.4
+    container_name: echochat-es
+    restart: unless-stopped
+    mem_limit: 2048m
+
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      xpack.security.http.ssl.enabled: "false"
+      xpack.security.transport.ssl.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
+      ELASTIC_PASSWORD: ${ES_PASSWORD:-changeme123}
+      ES_JAVA_OPTS: "-Xms768m -Xmx1536m"
+
+    volumes:
+      - ./data/es:/usr/share/elasticsearch/data
+
+    user: "1000:1000"
+
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+    ports:
+      - "9200:9200"
+
+    networks: [echochat-net]
+
+
+  # ==========================================================
+  # MinIO
+  # ==========================================================
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: echochat-minio
+    restart: unless-stopped
+    mem_limit: 1024m
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minio123456}
+      MINIO_SERVER_URL: http://ubuntu:9000
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    volumes:
+      - ./data/minio:/data
+
+    networks: [echochat-net]
+
+
+networks:
+  echochat-net:
+    name: echochat-net
+    driver: bridge
